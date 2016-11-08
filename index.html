@@ -8,7 +8,7 @@
         margin: 0px;
         padding: 0px;
     }
-    
+
     .middle {
         background-color: #222;
         position: relative;
@@ -22,10 +22,8 @@
     <div class="middle">
         <canvas height="640" width="960"></canvas>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
-        <!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
         <script>
         var canvas = document.querySelector("canvas");
-        // canvas.width = document.documentElement.clientWidth;
         canvas.height = document.documentElement.clientHeight - 50;
 
         var context = canvas.getContext("2d"),
@@ -33,14 +31,21 @@
             height = canvas.height;
 
         var n = 200,
-            tau = 2 * Math.PI,
+            tau = 2* Math.PI,
             nodes = d3.range(n).map(function() {
                 return {
                     radius: Math.random() * 8 + 2
                 };
             });
 
-        var force = d3.layout.force().charge(0.5).gravity(0).friction(1).nodes(nodes).size([width, height]).start();
+        function assignProportionateCharge(node) {
+          return node.radius / 10;
+        }
+        function assignSameCharge() {
+          return 0.5;
+        }
+        var force = d3.layout.force().charge(assignSameCharge).gravity(0).friction(1).nodes(nodes).size([width, height]).start();
+        // var force = d3.layout.force().charge(assignProportionateCharge).gravity(0.00).friction(1).nodes(nodes).size([width, height]).start();
         var stroke = d3.scale.linear().domain([0, 1]).range(["steelblue", "brown"]);
         force.on("tick", function(e) {
             var q = d3.geom.quadtree(nodes),
@@ -50,6 +55,7 @@
             for (i = 0; i < n; ++i) {
                 q.visit(collide(nodes[i]));
             }
+            //plot nodes
             for (i = 0; i < n; ++i) {
                 node = nodes[i];
                 context.beginPath();
@@ -58,6 +64,7 @@
                 context.stroke();
             }
             context.beginPath();
+            //plot velocity strokes
             for (i = 0; i < n; ++i) {
                 node = nodes[i];
                 context.moveTo(node.x, node.y);
